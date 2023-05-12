@@ -22,7 +22,8 @@ class RoleFilter extends BaseFilter implements FilterInterface
         if (! $this->authenticate->check()) {
             session()->set('redirect_url', current_url());
 
-            return redirect($this->reservedRoutes['login']);
+            // return redirect($this->reservedRoutes['login']);
+            return redirect()->to(route_to($this->reservedRoutes['login']))->with('error', lang('Auth.notLoggedIn'));
         }
 
         if (empty($arguments)) {
@@ -43,7 +44,8 @@ class RoleFilter extends BaseFilter implements FilterInterface
             return redirect()->to($redirectURL)->with('error', lang('Auth.notEnoughPrivilege'));
         }
 
-        return redirect()->to('/')->with('error', lang('Auth.notEnoughPrivilege'));
+        // return redirect()->to('/')->with('error', lang('Auth.notEnoughPrivilege'));
+        dd("SMS Filtro: No tienes permiso para realizar esta accion!!. ");
 
         // throw new PermissionException(lang('Auth.notEnoughPrivilege'));
     }

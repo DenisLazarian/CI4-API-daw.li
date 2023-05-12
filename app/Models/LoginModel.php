@@ -96,4 +96,6 @@ class LoginModel extends Model
             ->where('expires <=', date('Y-m-d H:i:s'))
             ->delete();
     }
+
+    
 }

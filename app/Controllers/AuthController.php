@@ -114,7 +114,7 @@ class AuthController extends Controller
 
         $timage = new \App\Libraries\Text2Image($config);
 
-        $timage->textToImage()->html();
+        // $timage->textToImage()->html();
 
         $timage->toJSON();
 
@@ -174,7 +174,7 @@ class AuthController extends Controller
         }
 
         // Set Captcha
-
+        d(realpath('fonts/monofont.ttf'));
         $config = [
             "textColor"=>'#fff',
             "backColor"=>'#FF1C1C',
@@ -186,18 +186,21 @@ class AuthController extends Controller
             // "noiceDots"=>20,
             "length" =>6,
             // "text"=> strtoupper(substr($this->auth->user()->username ?? $this->auth->user()->email, 0, 1)),
-            "expiration"=>7*MINUTE
+            "expiration"=>7*MINUTE,
+            "font"=>realpath('/fonts/monofont.ttf')
         ];
         
 
         $timage = new \App\Libraries\Text2Image($config);
 
-        $timage->captcha()->html();
+        // $timage->setConfig($config);
+
+        // $timage->captcha()->html();
 
         $timage->toJSON();
 
         $captcha = json_decode($timage->toJSON());
-        // d($captcha->text);
+        d($captcha->text);
         // end Set Captcha
         
         session()->setFlashdata('captchaText', $captcha->text);
@@ -253,6 +256,7 @@ class AuthController extends Controller
 
         // Save the user
         $allowedPostFields = array_merge(['password'], $this->config->validFields, $this->config->personalFields);
+        // dd($this->request->getPost($allowedPostFields));
         $user              = new User($this->request->getPost($allowedPostFields));
 
         $this->config->requireActivation === null ? $user->activate() : $user->generateActivateHash();

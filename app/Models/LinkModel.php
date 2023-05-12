@@ -46,9 +46,10 @@ class LinkModel extends Model
     }
 
     public function addLink($data){
-        
+        $data = $this->db->table('link')->insert($data);
+        $data = $this->db->insertID();
 
-        return $this->db->table('link')->insert($data);
+        return $data;
     }
 
     public function findLink($id){
@@ -63,7 +64,12 @@ class LinkModel extends Model
     }
 
     public function updateLink($id, $data){
-        $this->db->table('link')->update($data, ['id' => $id]);
+        $linkUpdated = $this->db->table('link');
+        $linkUpdated->where('id',$id) ->update($data);
+        
+        // $linkUpdated = $this->db->insertID();
+
+        return $id;
     }
 
     public function deleteById($id) 
@@ -96,5 +102,45 @@ class LinkModel extends Model
     public function findAllLinksByUser($id){
         $data = $this->table('link')->where('user_id', $id)->findAll();
         return $data;
+    }
+
+    public function findLinkByUserAndID($id, $linkId){
+        $data = $this->table('link')->where('user_id', $id)->where('id', $linkId)->get()->getRowArray();
+        // dd($data);
+        return $data;
+    }
+
+
+    public function getRandomShortLink($id){
+        $data = $this->table('link')->select("short_link")->where('id', $id)->get()->getRowArray();
+        return $data;
+    }
+
+    public function getRandomTitle($linkShort){
+        if($linkShort == "")
+            $linkShort = null;
+
+        if(!$linkShort){
+            $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            $randomString = substr(str_shuffle($characters), 0, 7);
+
+            $getAllLinks = $this->findAllLinks();
+
+            for ($i=0; $i < count($getAllLinks); $i++) { 
+                $linkStringDb = explode('/', $getAllLinks[$i]['short_link'])[4];
+
+                if($linkStringDb == $randomString){
+                    $randomString = $this->getRandomTitle($linkShort);
+                }else{
+                    return $randomString;
+                }
+
+            }
+
+            return $randomString;
+        }
+
+        return $linkShort;
+
     }
 }

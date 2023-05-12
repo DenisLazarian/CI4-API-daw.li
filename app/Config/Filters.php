@@ -3,6 +3,9 @@
 namespace Config;
 
 use App\Filters\CorsFilter;
+use App\Filters\JWTFilter;
+use App\Filters\RoleApiFilter;
+
 use CodeIgniter\Config\BaseConfig;
 use CodeIgniter\Filters\CSRF;
 use CodeIgniter\Filters\DebugToolbar;
@@ -26,7 +29,10 @@ class Filters extends BaseConfig
         'role'       => \App\Filters\RoleFilter::class,
         'permission' => \App\Filters\PermissionFilter::class,
 
+        'roleApi'    => RoleApiFilter::class,
+
         'Cors' => CorsFilter::class,
+        'jwt' => JWTFilter::class,
     ];
 
     /**
@@ -36,8 +42,9 @@ class Filters extends BaseConfig
     public array $globals = [
         'before' => [
             // 'honeypot',
-            'csrf' => ['except' => ['api/*','fileconnector','links/show/*']],
+            'csrf' => ['except' => ['api/*','fileconnector']],
             'Cors',
+            
             // 'invalidchars',
         ],
         'after' => [

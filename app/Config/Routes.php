@@ -102,6 +102,67 @@ $routes->group('',['filter'=>'role:admin,user'], function($routes){
 
 
 
+
+
+
+// APIs 
+
+
+// acciones sin autenticacion ni registro de usuario.
+$routes->group('api', function($routes){
+    
+
+    $routes->get('url/(:any)', 'LinksApiController::getSingleURL/$1');
+    $routes->get('create', 'LinksApiController::createURL');
+    $routes->get('show/(:any)', 'LinksApiController::show/$1');
+
+    $routes->post('login', 'LinksApiController::login');
+    $routes->post('user/register', 'LinksApiController::registerUserApi');
+
+
+    $routes->group('link',['filter' =>'jwt'],function($routes){
+        $routes->post('create', 'LinksApiController::createDawlyApi',['filter' =>'roleApi:admin,user']);
+        $routes->post('edit/(:num)', 'LinksApiController::editDawlyApi/$1',['filter' =>'roleApi:admin,user']);
+        
+    });
+
+    $routes->group('user',['filter' =>'jwt'],function($routes){
+        $routes->get('list', 'LinksApiController::getAllUsersApi',['filter' =>'role:admin']);
+        $routes->get('roles/(:num)', 'LinksApiController::getUserRoles/$1',['filter' =>'roleApi:admin']);
+        $routes->post('edit/(:num)','linksApiController::editUser/$1',['filter' =>'roleApi:admin,user']);
+        $routes->get('check/(:num)/(:num)','linksApiController::checkUserRole/$1/$2',['filter' =>'roleApi:admin']);
+        
+    });
+
+
+
+});
+
+
+
+
+//  $routes->get("test", "LinksApiController::test",['filter'=>'jwt']);
+
+//  $routes->get("test", "LinksApiController::test",['filter'=>'jwt:CONFIG_POLICY']);
+//  $routes->get("test", "LinksApiController::test",['filter'=>'jwt:test']);
+
+
+ /**
+     * Call with default JWT policy
+     * $routes->get("test", "LinksApiController::test",['filter'=>'jwt']);
+     *
+     * Call with custom JWT policy defined in APIJwt config file
+     * $routes->get("test", "LinksApiController::test",['filter'=>'jwt:CONFIG_POLICY']);
+     * $routes->get("test", "LinksApiController::test",['filter'=>'jwt:test']);
+     *
+     */
+$routes->get("test", "LinksApiController::test", ['filter' => 'jwt']);
+
+
+
+
+
+
 /*
  * --------------------------------------------------------------------
  * Additional Routing

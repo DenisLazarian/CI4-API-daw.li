@@ -17,12 +17,12 @@ class ClickSeeder extends Seeder
 
         foreach ($links as $link) {
             for ($i=0; $i < 5; $i++) { 
-                # code...
+                
                 $data = [
                     'link_id' => $link['id'],
                     'date' => date('Y-m-d'),
                 ];
-                $modelClick->insert($data);
+                $modelClick->addClick($data);
             }
         }
     }

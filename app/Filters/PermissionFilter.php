@@ -46,7 +46,9 @@ class PermissionFilter extends BaseFilter implements FilterInterface
 
             
 
-            return redirect()->to('/')->with('error', lang('Auth.notEnoughPrivilege'));
+            // return redirect()->to('/')->with('error', lang('Auth.notEnoughPrivilege'));
+
+            dd("Yo do not have authorization");
 
             // throw new PermissionException(lang('Auth.notEnoughPrivilege'));
         }

@@ -452,7 +452,12 @@ class Text2Image
     {
         $xi = imagesx($image);
         $yi = imagesy($image);
-        $box = imagettfbbox($size, $angle, $font, $text);
+        d($font);
+        $box = imagettfbbox(
+            $size, 
+            $angle, 
+            $font, 
+            $text);
         $xr = abs(max($box[2], $box[4]));
         $yr = abs(max($box[5], $box[7]));
         $x = intval(($xi - $xr) / 2);

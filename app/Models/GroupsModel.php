@@ -46,7 +46,12 @@ class GroupsModel extends Model
         return $data;
     }
 
+    public function getRoleById($id){
+        $data = $this->table('auth_groups')->where('id', $id)->get()->getRowArray();
+        return $data;
+    }
 
+    
 
 
 
@@ -55,6 +60,7 @@ class GroupsModel extends Model
         cache()->delete("{$groupId}_users");
         cache()->delete("{$userId}_groups");
         cache()->delete("{$userId}_permissions");
+
 
         $data = [
             'user_id'  => $userId,

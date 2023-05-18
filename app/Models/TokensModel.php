@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use CodeIgniter\Model;
+
 class TokensModel extends Model
 {
     protected $DBGroup          = 'default';
@@ -14,17 +15,20 @@ class TokensModel extends Model
     protected $useSoftDeletes   = false;
     protected $protectFields    = true;
     protected $allowedFields    = ['tokenid', 'subject', 'expiration'];
+
     // Dates
     protected $useTimestamps = false;
     protected $dateFormat    = 'datetime';
     protected $createdField  = 'created_at';
     protected $updatedField  = 'updated_at';
     protected $deletedField  = 'deleted_at';
+
     // Validation
     protected $validationRules      = [];
     protected $validationMessages   = [];
     protected $skipValidation       = false;
     protected $cleanValidationRules = true;
+
     // Callbacks
     protected $allowCallbacks = true;
     protected $beforeInsert   = [];
@@ -35,6 +39,7 @@ class TokensModel extends Model
     protected $afterFind      = [];
     protected $beforeDelete   = [];
     protected $afterDelete    = [];
+
     public function get($token_data)
     {
         $data = array(
@@ -43,10 +48,12 @@ class TokensModel extends Model
         );
         return $this->where($data)->first();
     }
+
     public function revoked($token_data)
     {
         return $this->get($token_data) != null;
     }
+
     public function revoke($token_data)
     {
         $data = array(
@@ -54,14 +61,16 @@ class TokensModel extends Model
             'subject' => $token_data->sub??'subject.not.defined',
             'expiration' => $token_data->exp
         );
+
         return $this->insert($data);
     }
+
     public function purge($time=null)
     {
         if ($time===null) $time=time();
         $data = array('expiration <=' => $time);
         $query = $this->where($data)->delete();
-       
+        
         return $this->affectedRows();
     }
 }

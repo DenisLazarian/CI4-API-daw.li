@@ -11,6 +11,9 @@ use Myth\Auth\Entities\User;
 
 class LinkController extends BaseController
 {
+    public function welcome(){
+        return view('welcome_message');
+    }
     public function index()
     {
         session()->start();

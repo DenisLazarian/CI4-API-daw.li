@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Welcome to CodeIgniter 4!</title>
+    <title>API with codeigniter 4</title>
     <meta name="description" content="The small framework with powerful features">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="shortcut icon" type="image/png" href="/favicon.ico">
@@ -220,9 +220,11 @@
 
     <div class="heroe">
 
-        <h1>Welcome to CodeIgniter <?= CodeIgniter\CodeIgniter::CI_VERSION ?></h1>
+        <h1>1. APIs DAWLY, securitzada i sense securitzar</h1>
 
-        <h2>The small framework with powerful features</h2>
+        <h2>API with CodeIgniter v.<?= CodeIgniter\CodeIgniter::CI_VERSION ?></h2>
+
+        <!-- <h2>The small framework with powerful features</h2> -->
 
     </div>
 
@@ -232,17 +234,17 @@
 
 <section>
 
-    <h1>About this page</h1>
+    <h1>About the project</h1>
 
-    <p>The page you are looking at is being generated dynamically by CodeIgniter.</p>
+    <p>In this project I working and testing generating my own APIs for didactic purpose.</p>
 
-    <p>If you would like to edit this page you will find it located at:</p>
+    <p>If you would like to use this API, press <a href="https://github.com/DenisLazarian/CI4-API-daw.li">docs</a> to see the documentation or check de <strong>readme</strong>  of this project.</p>
 
-    <pre><code>app/Views/welcome_message.php</code></pre>
+    <pre><code>Author: Denis Emanuel Lazarian</code></pre>
 
-    <p>The corresponding controller for this page can be found at:</p>
+    <!-- <p>The corresponding controller for this page can be found at:</p>
 
-    <pre><code>app/Controllers/Home.php</code></pre>
+    <pre><code>app/Controllers/Home.php</code></pre> -->
 
 </section>
 

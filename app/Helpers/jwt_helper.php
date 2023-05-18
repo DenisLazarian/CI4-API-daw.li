@@ -1,7 +1,5 @@
 <?php
 
-// namespace App\Helpers;
-
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 

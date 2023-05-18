@@ -97,5 +97,12 @@ class LoginModel extends Model
             ->delete();
     }
 
+    public function getAllLoginsByUser($id)
+    {
+        $data = $this->where('user_id', $id)->findAll();
+        // dd($data);
+        return $data;
+    }
+
     
 }

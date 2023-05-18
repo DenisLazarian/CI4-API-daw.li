@@ -6,6 +6,7 @@ use App\Models\GroupsModel;
 use App\Models\LinkModel;
 use App\Models\LoginModel;
 use App\Models\UserModel;
+use CodeIgniter\API\ResponseTrait;
 use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\RESTful\ResourceController;
 use Firebase\JWT\JWT;
@@ -20,6 +21,7 @@ use Myth\Auth\Config\Auth as AuthConfig;
 class LinksApiController extends ResourceController
 {
 
+    use ResponseTrait;
     protected $auth;
 
     /**
@@ -44,15 +46,20 @@ class LinksApiController extends ResourceController
 
 
     /**
-     * Return an array of resource objects, themselves in array format
+     * Index - Return all links in the database
+     * 
+     * @return array $responses with status code, error, messages and data.
+     * Data is an array of all links
+     * 
      *
      * @return mixed
      */
     public function index()
     {
-        $model = new \App\Models\LinkModel();
+        $model = new LinkModel();
 
         $links = $model->findAllLinks();
+        
 
         $responses = [
             'status' => 200,
@@ -61,16 +68,28 @@ class LinksApiController extends ResourceController
             'data' => $links
         ];
 
+        if(empty($links)){
+            $responses['status'] = 404;
+            $responses['error'] = true;
+            $responses['messages'] = 'No links found';
+        }
+
+        return $this->respond($responses);  
+
     }
 
     /**
      * Return the link of a resource object
+     * 
+     * @param $id: id of the link
+     * 
      *
      * @return mixed
+     * 
      */
     public function getSingleURL($id)
     {
-        $model = new \App\Models\LinkModel();
+        $model = new LinkModel();
 
         $link = $model->getSingleURL($id);
 
@@ -94,17 +113,71 @@ class LinksApiController extends ResourceController
     }
 
     /**
-     * Return the properties of a resource object
+     * @api {get} 
+     * 
+     * `` Url: base_url/api/links/:id``
+     * 
+     * ---
+     * 
+     * @param $id: id of the link
+     * 
+     * This function get link by id and show all properties of the link, but only if the user is logged in and if the user is the owner of the link.
+     * If the user is not logged in or is logged in with role user, but is not the owner, the function will show only the original url.
+     * Only users with role admin can see all properties of the link of someone else.
      *
-     * @return mixed
+     * @return $response with status code, error, messages and data.
+     * ### What will return?
+     * ---
+     * 
+     * In case of error:
+     * * status: 404: Not found -> It's mean that the link does not exist in the database.
+     * * error: true -> It's mean that the link does not exist in the database.
+     * 
+     * In case of success:
+     * * status: 200: OK -> Success on the request.
+     * * error: false -> There was no error in the request.
+     * * messages: 'Link found' -> It's mean that the link exist in the database.
+     * * data: -> It's an array with all properties of the link.
+     * 
      */
-    public function show($id = null)
+    public function showURL($id = null)
     {
-        $model = new \App\Models\LinkModel();
+        helper("jwt");
+        $linkModel =  model(LinkModel::class);
+        $userModel =  model(UserModel::class);
 
-        $link = $model->findLink($id);
+        
+        $cfgAPI = new \Config\APIJwt(); // configuracion i algoritmo de decodificacion
+
+        $tokeResult = getToken($cfgAPI->config(), $this->request); // para pillar el id lo decodificamos con la libreria.
+
+        $token_data = $tokeResult ? $tokeResult['data'] : null; 
+
+        $user = $userModel -> findUser($token_data ? $token_data->uid : '-1');
+
+        $link = null;
+
+        if($user ?? false){
+
+            if($userModel->inGroup('1', $user['id']) ?? false){
+                $link = $linkModel->findLink($id);
+            }elseif($userModel->inGroup('2', $user['id']) ?? false){  
+                $link = $linkModel->findLinkByUser($user['id'], $id);
+            }
+            
+        }else{
+            $link = $linkModel->findFullLink($id);
+        }
+        // $link = $linkModel->findLink($id);
 
         if($link ?? false){
+            // dd($link['id']);
+            $linkOwner = $userModel->findUser(($link && isset($link['user_id'])) ? $link['user_id'] : "-1");
+
+            $link['user'] = $linkOwner;
+
+            // unset($link['user_id']);
+
             $response= [
                 'status' => 200,
                 "error" => false,
@@ -116,91 +189,14 @@ class LinksApiController extends ResourceController
                 'status' => 404,
                 "error" => true,
                 'messages' => 'Link not found',
-                'data'=> $link
+                // 'data'=> $link
             ];
         }
 
         return $this->respond($response);
-    }
-
-    /**
-     * Return a new resource object, with default properties
-     *
-     * @return mixed
-     */
-    public function new()
-    {
-        
-    }
-
-    /**
-     * Create a new resource object, from "posted" parameters
-     *
-     * @return mixed
-     */
-    public function create()
-    {
-        //
-    }
-
-    public function createNotRegistered(){
-        $model = new \App\Models\LinkModel();
-
-        $data = $this->request->getJSON();
-
-        $link = $model->addLink($data);
-
-        if($link ?? false){
-            $response= [
-                'status' => 200,
-                "error" => false,
-                'messages' => 'Link created',
-                'data'=> $link
-            ];
-        }else{
-            $response= [
-                'status' => 404,
-                "error" => true,
-                'messages' => 'Link not created',
-                'data'=> $link
-            ];
-        }
-
-        return $this->respond($response);
-    }
-
-    /**
-     * Return the editable properties of a resource object
-     *
-     * @return mixed
-     */
-    public function edit($id = null)
-    {
-        //
-    }
-
-    /**
-     * Add or update a model resource, from "posted" properties
-     *
-     * @return mixed
-     */
-    public function update($id = null)
-    {
-        //
-    }
-
-    /**
-     * Delete the designated resource object from the model
-     *
-     * @return mixed
-     */
-    public function delete($id = null)
-    {
-        //
     }
 
    
-
     /**
      * API Sample call
      *
@@ -271,7 +267,7 @@ class LinksApiController extends ResourceController
         /****************** GENERATE TOKEN ********************/
         helper("jwt");
 
-        $APIGroupConfig = "test";
+        $APIGroupConfig = "default";
         $cfgAPI = new \Config\APIJwt($APIGroupConfig);
 
         $data = array(
@@ -300,6 +296,10 @@ class LinksApiController extends ResourceController
         $loginModel = new LoginModel();
 
         $userList = $userModel->findAllUsers();
+
+        for ($i=0; $i < count($userList); $i++) 
+            $userList[$i]->logins = $loginModel ->getAllLoginsByUser($userList[$i]->id);
+        
         
         if($userList ?? false){
             $response = [
@@ -316,8 +316,6 @@ class LinksApiController extends ResourceController
                 // 'users' => $userList
             ];
         }
-
-
         return $this->respond($response);
         
     }
@@ -395,11 +393,26 @@ class LinksApiController extends ResourceController
         $active = $this->request->getVar("active");
         $password_hash = $this->request->getVar("password_hash");
 
+        if(!$email && !$username && !$active && !$password_hash) {
+            $response=[
+                'status' => 400,
+                'error' => true,
+                'data' => [
+                    'email' => $email,
+                    'username' => $username,
+                    'active' => $active,
+                    'password_hash'=> $password_hash
+                ],
+            ];
+
+            return $this->respond($response);
+        }
+
         $data= [
             'email' => $email,
             'username' => $username,
             'active' => $active,
-            'password_hash'=> Password::hash($password_hash)
+            'password_hash'=> (!$password_hash || $password_hash == "") ? "" : Password::hash($password_hash)
         ];
 
         
@@ -555,31 +568,27 @@ class LinksApiController extends ResourceController
         return $this->respond($response);
     }
 
+    
+
 
     public function createDawlyApi(){
+
+        helper("jwt");
         $linkModel =  model(LinkModel::class);
 
-        $header = $this->request->header("Authorization");
-        // $header = $request->headers();
-
-        $token = null;
-
-        // dd($header);
-        // Mediante el token JWT obtenemos el id del usuario logueado
-        if (!empty($header)) {
-            if (preg_match('/Bearer\s(\S+)/', $header, $matches)) {
-                $token = $matches[1];
-            }
-        }
+        
         $cfgAPI = new \Config\APIJwt(); // configuracion i algoritmo de decodificacion
 
-        $token_data = JWT::decode($token, new Key($cfgAPI->config()->tokenSecret, $cfgAPI->config()->hash)); // para pillar el id lo decodificamos con la libreria.
+        $tokeResult = getToken($cfgAPI->config(), $this->request); // para pillar el id lo decodificamos con la libreria.
 
+        $token_data = $tokeResult ? $tokeResult['data'] : null; 
+        // dd($token_data->uid);
+        
         $link = $this->request->getVar('destination');
-        $linkShort = $this->request->getVar('short-url');
-        $linkFile = $this->request->getVar('associate-file');
 
         
+        // dd($link);
+        $linkShort = $this->request->getVar('short-url');
         
         $title = $this->request->getVar('title');
         $description = $this->request->getVar('description');
@@ -595,6 +604,13 @@ class LinksApiController extends ResourceController
 
         if($expirationDate == "")
             $expirationDate = null;
+
+        if(!$token_data){
+            $title = null;
+            $description = null;
+            $expirationDate = null;
+            $linkShort = null;
+        }
 
         
 
@@ -629,20 +645,46 @@ class LinksApiController extends ResourceController
             
             return $this->respond($response);
         }
-        // dd($expirationDate);
+
+        $userModel = model(UserModel::class);
+
+        $linkOwner = $userModel->findUser($token_data ? $token_data->uid : "-1");
+
+            // $response = [
+            //     'status' => 401,
+            //     'error' => true,
+            //     'messages' =>  "The url destination is required",
+            //     'full_link' => $link,
+            //     'short_link' => $sLink,
+            //     // 'user_id' => $token_data ? $token_data->uid : null,
+            //     'name' => $title,
+            //     'description' => $description,
+            //     'created_date' => date('Y-m-d H:i:s'),
+            //     // 'updated_at' => date('Y-m-d H:i:s'),
+            //     'expiration_date' => $expirationDate,
+            //     // 'is_file'   =>  ($linkFile ?? false)?true:false
+            //     "user" => $linkOwner,
+            // ];
+            
+            // return $this->respond($response);
+        
+
         $link = $linkModel->addLink([
             'full_link' => $link,
             'short_link' => $sLink,
-            'user_id' => $token_data->uid ?? null,
+            'user_id' => $token_data ? $token_data->uid : null,
             'name' => $title,
             'description' => $description,
             'created_date' => date('Y-m-d H:i:s'),
             // 'updated_at' => date('Y-m-d H:i:s'),
             'expiration_date' => $expirationDate,
             // 'is_file'   =>  ($linkFile ?? false)?true:false
+
         ]);
         
         $link = $linkModel->findLink($link);
+
+        $link['user'] = $linkOwner;
         
         $data=[
             // 'title'=>"Public Site",
@@ -654,16 +696,13 @@ class LinksApiController extends ResourceController
         ];
 
         $response = [
-            'status' => 401,
-            'error' => true,
+            'status' => 200,
+            'error' => false,
             'messages' =>  "Link created successfully",
             'Link created' => $data,
         ];
         
         return $this->respond($response);
-
-
-        // return view('links/public',$data);
 
     }
 
@@ -672,21 +711,14 @@ class LinksApiController extends ResourceController
         $linkModel =  model(LinkModel::class);
         
 
-        $header = $this->request->header("Authorization");
-        // $header = $request->headers();
+        helper("jwt");
 
-        $token = null;
-
-        // dd($header);
-        // Mediante el token JWT obtenemos el id del usuario logueado
-        if (!empty($header)) {
-            if (preg_match('/Bearer\s(\S+)/', $header, $matches)) {
-                $token = $matches[1];
-            }
-        }
+        
         $cfgAPI = new \Config\APIJwt(); // configuracion i algoritmo de decodificacion
 
-        $token_data = JWT::decode($token, new Key($cfgAPI->config()->tokenSecret, $cfgAPI->config()->hash)); // para pillar el id lo decodificamos con la libreria.
+        $tokeResult = getToken($cfgAPI->config(), $this->request); // para pillar el id lo decodificamos con la libreria.
+
+        $token_data = $tokeResult ? $tokeResult['data'] : null; 
         
         $linkToUpdate = $linkModel->findLink($linkId);
 
@@ -700,9 +732,7 @@ class LinksApiController extends ResourceController
         }
 
         if(!$userModel->inGroup(1, $token_data->uid)){ // si es admin, continuamos, si no lo es, comprovamos si es suyo el link
-
             $linkByUser = $linkModel->findLinkByUserAndID($token_data->uid, $linkId) ? $linkModel->findLinkByUserAndID($token_data->uid, $linkId)['user_id'] : -1;
-           
 
             if($linkToUpdate['user_id'] != ($linkByUser)){
                 $response = [
@@ -760,6 +790,31 @@ class LinksApiController extends ResourceController
             'Link updated' => $linkUpdated,
         ];
         
+
+        return $this->respond($response);
+    }
+
+
+    public function getUserById($id){
+        
+        $modelUser = model(UserModel::class);
+
+        $user = $modelUser->findUser($id);
+
+        if(!$user){
+            $response = [
+                'status' => 401,
+                'error' => true,
+                'messages' =>  "User not found",
+            ];
+        }else{
+            $response = [
+                'status' => 200,
+                'error' => false,
+                'messages' =>  "User found",
+                'user' => $user,
+            ];
+        }
 
         return $this->respond($response);
     }

@@ -46,6 +46,13 @@ class LinkModel extends Model
     }
 
     public function addLink($data){
+        // d($data['full_link']);
+        // d($data['user']);
+        // d($data['full_link']);
+        // d($data['full_link']);
+        // d($data['full_link']);
+        // dd($data['full_link']);
+
         $data = $this->db->table('link')->insert($data);
         $data = $this->db->insertID();
 
@@ -54,6 +61,21 @@ class LinkModel extends Model
 
     public function findLink($id){
         $data = $this->table('link')->where('id', $id)->get()->getRowArray();
+        return $data;
+    }
+
+    public function findFullLink($id){
+        $data = $this->table('link')->select('full_link')->where('id', $id)->get()->getRowArray();
+        return $data;
+    }
+
+    public function findLinkByUser($idUser, $idLink){
+        $data = $this->table('link')->where('user_id', $idUser)->where('id', $idLink)->get()->getRowArray();
+
+        if(!$data){ // Si el link no es suyo, solo puede ver la url original
+            $data = $this->findFullLink($idLink);
+        }
+        // dd($data);
         return $data;
     }
 
@@ -142,5 +164,10 @@ class LinkModel extends Model
 
         return $linkShort;
 
+    }
+
+    public function getSingleURL($id){
+        $data = $this->table('link')->select("short_link")->where('id', $id)->get()->getRowArray();
+        return $data;
     }
 }

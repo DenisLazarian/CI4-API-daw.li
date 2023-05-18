@@ -40,11 +40,8 @@ class JWTFilter implements FilterInterface
             $cfgAPI = new \Config\APIJwt();
 
         $header = $request->header("Authorization");
-        // $header = $request->headers();
 
         $token = null;
-
-        // dd($header);
 
         // extract the token from the header
         if (!empty($header)) {

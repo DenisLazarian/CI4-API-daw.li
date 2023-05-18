@@ -30,112 +30,40 @@ $routes->set404Override();
 // We get a performance increase by specifying the default
 // route since we don't have to scan directories.
 
-$routes->get('/', 'LinkController::check');
-
-
-
-// Login/out
-$routes->get('login', 'AuthController::login');
-$routes->post('login', 'AuthController::attemptLogin');
-$routes->get('logout', 'AuthController::logout');
-
-// Registration
-$routes->get('register', 'AuthController::register');
-$routes->post('register', 'AuthController::attemptRegister');
-
-// Activation
-$routes->get('activate-account', 'AuthController::activateAccount');
-$routes->get('resend-activate-account', 'AuthController::resendActivateAccount');
-
-// Forgot/Resets
-$routes->get('forgot', 'AuthController::forgotPassword');
-$routes->post('forgot', 'AuthController::attemptForgot');
-$routes->get('reset-password', 'AuthController::resetPassword');
-$routes->post('reset-password', 'AuthController::attemptReset');
-
-
-$routes->group('link', function($routes){
-    // $routes->get('/', 'AdminController::index');
-    // $routes->get('users', 'AdminController::users');
-    // $routes->get('links', 'AdminController::links');
-    // $routes->get('settings', 'AdminController::settings');
-    
-    $routes->get('create', 'LinkController::createLink');
-    $routes->post('create_post', 'LinkController::attemptsCreateLink');
-    
-    $routes->group('',['filter' => 'role:admin,user'], function($routes){
-        $routes->get('/', 'LinkController::index');
-        $routes->get('show/(:segment)', 'LinkController::showLink/$1');
-        $routes->get('edit/(:segment)', 'LinkController::editLink/$1');
-        $routes->post('update/(:segment)', 'LinkController::attemptsUpdateLink/$1');
-        $routes->post('delete/(:segment)', 'LinkController::deleteLink/$1');
-
-        $routes->get('result', 'LinkController::getResult');
-    });
-    
-});
-
-
-$routes->group('admin',['filter'=> 'role:admin'], function($routes){
-    $routes->get('/', 'UserController::list');
-    $routes->get('edit/(:segment)', 'UserController::edit/$1');
-    $routes->post('update/(:segment)', 'UserController::update/$1');
-    $routes->post('delete/(:segment)', 'UserController::delete/$1');
-    $routes->get('disabled-account/(:segment)', 'UserController::disable/$1');
-    $routes->get('create', 'UserController::create');
-    $routes->post('save', 'UserController::save');
-});
-
-$routes->get('daw.li/(:segment)',"LinkController::attempLink/$1");
-
-$routes->get('public', 'LinkController::publicSite');
-
-// $routes->get('description', 'linkController::')
-// explorer
-
-$routes->group('',['filter'=>'role:admin,user'], function($routes){
-    $routes->post('fileconnector', 'FileExplorerController::connector');
-    $routes->get('fileconnector', 'FileExplorerController::connector');
-    $routes->get('filemanager', 'FileExplorerController::manager');
-    $routes->get('fileget/(:any)', 'FileExplorerController::getFile');
-});
-
-
-
-
+$routes->get('/', 'LinkController::welcome');
 
 
 // APIs 
-
-
-// acciones sin autenticacion ni registro de usuario.
 $routes->group('api', function($routes){
-    
 
-    $routes->get('url/(:any)', 'LinksApiController::getSingleURL/$1');
+    $routes->get('url/(:num)', 'LinksApiController::getSingleURL/$1');
     $routes->get('create', 'LinksApiController::createURL');
-    $routes->get('show/(:any)', 'LinksApiController::show/$1');
+    $routes->get('show/(:num)', 'LinksApiController::showURL/$1');
+    $routes->options('show/(:num)', 'LinksApiController::showURL/$1');
 
     $routes->post('login', 'LinksApiController::login');
+    $routes->options('login', 'LinksApiController::login');
+
     $routes->post('user/register', 'LinksApiController::registerUserApi');
 
+    $routes->post('link/create', 'LinksApiController::createDawlyApi');
+    $routes->options('link/create', 'LinksApiController::createDawlyApi');
 
-    $routes->group('link',['filter' =>'jwt'],function($routes){
-        $routes->post('create', 'LinksApiController::createDawlyApi',['filter' =>'roleApi:admin,user']);
+    $routes->group('link',['filter' =>'jwt:default'],function($routes){
         $routes->post('edit/(:num)', 'LinksApiController::editDawlyApi/$1',['filter' =>'roleApi:admin,user']);
-        
     });
+    $routes->options('link/edit/(:num)', 'LinksApiController::editDawlyApi/$1');
 
-    $routes->group('user',['filter' =>'jwt'],function($routes){
+    $routes->group('user',['filter' =>'jwt:default'],function($routes){
         $routes->get('list', 'LinksApiController::getAllUsersApi',['filter' =>'role:admin']);
         $routes->get('roles/(:num)', 'LinksApiController::getUserRoles/$1',['filter' =>'roleApi:admin']);
         $routes->post('edit/(:num)','linksApiController::editUser/$1',['filter' =>'roleApi:admin,user']);
-        $routes->get('check/(:num)/(:num)','linksApiController::checkUserRole/$1/$2',['filter' =>'roleApi:admin']);
-        
+        $routes->get('check/(:num)/(:num)','linksApiController::checkUserRole/$1/$2',['filter' =>'roleApi:admin,user']);
+        $routes->get('show/(:num)','linksApiController::getUserById/$1',['filter' =>'roleApi:admin']);
     });
-
-
-
+    $routes->options('user/edit/(:num)','linksApiController::editUser/$1');
+    $routes->options('user/show/(:num)','linksApiController::getUserById/$1');
+    $routes->options('user/check/(:num)/(:num)','linksApiController::checkUserRole/$1/$2');
 });
 
 
@@ -157,6 +85,91 @@ $routes->group('api', function($routes){
      *
      */
 $routes->get("test", "LinksApiController::test", ['filter' => 'jwt']);
+
+
+
+
+
+
+
+
+
+
+
+// APPS CONTROLLERS WITH SESSIONS
+
+// $routes->get('/', 'LinkController::check');
+
+
+
+// // Login/out
+// $routes->get('login', 'AuthController::login');
+// $routes->post('login', 'AuthController::attemptLogin');
+// $routes->get('logout', 'AuthController::logout');
+
+// // Registration
+// $routes->get('register', 'AuthController::register');
+// $routes->post('register', 'AuthController::attemptRegister');
+
+// // Activation
+// $routes->get('activate-account', 'AuthController::activateAccount');
+// $routes->get('resend-activate-account', 'AuthController::resendActivateAccount');
+
+// // Forgot/Resets
+// $routes->get('forgot', 'AuthController::forgotPassword');
+// $routes->post('forgot', 'AuthController::attemptForgot');
+// $routes->get('reset-password', 'AuthController::resetPassword');
+// $routes->post('reset-password', 'AuthController::attemptReset');
+
+
+// $routes->group('link', function($routes){
+//     // $routes->get('/', 'AdminController::index');
+//     // $routes->get('users', 'AdminController::users');
+//     // $routes->get('links', 'AdminController::links');
+//     // $routes->get('settings', 'AdminController::settings');
+    
+//     $routes->get('create', 'LinkController::createLink');
+//     $routes->post('create_post', 'LinkController::attemptsCreateLink');
+    
+//     $routes->group('',['filter' => 'role:admin,user'], function($routes){
+//         $routes->get('/', 'LinkController::index');
+//         $routes->get('show/(:segment)', 'LinkController::showLink/$1');
+//         $routes->get('edit/(:segment)', 'LinkController::editLink/$1');
+//         $routes->post('update/(:segment)', 'LinkController::attemptsUpdateLink/$1');
+//         $routes->post('delete/(:segment)', 'LinkController::deleteLink/$1');
+
+//         $routes->get('result', 'LinkController::getResult');
+//     });
+    
+// });
+
+
+// $routes->group('admin',['filter'=> 'role:admin'], function($routes){
+//     $routes->get('/', 'UserController::list');
+//     $routes->get('edit/(:segment)', 'UserController::edit/$1');
+//     $routes->post('update/(:segment)', 'UserController::update/$1');
+//     $routes->post('delete/(:segment)', 'UserController::delete/$1');
+//     $routes->get('disabled-account/(:segment)', 'UserController::disable/$1');
+//     $routes->get('create', 'UserController::create');
+//     $routes->post('save', 'UserController::save');
+// });
+
+$routes->get('daw.li/(:segment)',"LinkController::attempLink/$1");
+
+// $routes->get('public', 'LinkController::publicSite');
+
+// // $routes->get('description', 'linkController::')
+// // explorer
+
+// $routes->group('',['filter'=>'role:admin,user'], function($routes){
+//     $routes->post('fileconnector', 'FileExplorerController::connector');
+//     $routes->get('fileconnector', 'FileExplorerController::connector');
+//     $routes->get('filemanager', 'FileExplorerController::manager');
+//     $routes->get('fileget/(:any)', 'FileExplorerController::getFile');
+// });
+
+
+
 
 
 

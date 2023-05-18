@@ -138,7 +138,7 @@ class UserModel extends Model
         // $query->orderBy('l.id','DESC');
 
         $data = $query;
-        // d($data);
+        // dd($data);
 
         return $data;
     }
@@ -188,7 +188,7 @@ class UserModel extends Model
     }
 
     public function findUser($id){
-        $query = $this->db->table('users');
+        $query = $this->table('users');
         $query-> select("id, username, email, active");
         $query->where('id',$id);
         $user = $query->get()->getRowArray();

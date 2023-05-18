@@ -6,7 +6,7 @@ use CodeIgniter\Config\BaseConfig;
 
 class APIJwt extends BaseConfig
 {
-    public $policyName = "test";
+    public $policyName = "default";
 
     /**
      * tokenSecret
@@ -87,21 +87,21 @@ public $default = [
     'audience'     => "daw-company.user-db",
     'subject'      => "secure.jwt.v1.daw",
     'autoRenew'    => true,
-    'oneTimeToken' => false,
-    'renewTokenField' => 'refreshToken',
+    'oneTimeToken' => true,
+    'renewTokenField' => 'token',
     'includePolicy' => true,
 ];
 
 public $test = [
     'tokenSecret'  => 'e2980ce7a6b877cff666ae064da0bb88be6216b7a9ee562a8753ad22bf5c048c', //hex2bin.
     'hash'         => "HS256",
-    'authTimeout'  => 24 * HOUR,
+    'authTimeout'  => 1 * HOUR,
     'issuer'       => "test-company",
     'audience'     => "test-company.user-db",
     'subject'      => "secure.jwt.v1.test",
-    'autoRenew'    => false,
-    'oneTimeToken' => false,
-    'renewTokenField' => 'refreshToken',
+    'autoRenew'    => true,
+    'oneTimeToken' => true,
+    'renewTokenField' => 'token',
     'includePolicy' => true,
 ];
 
